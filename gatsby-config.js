@@ -15,6 +15,7 @@ module.exports = {
     },
   },
   plugins: [
+    `gatsby-plugin-sitemap`,
     `gatsby-plugin-typescript`,
     `gatsby-plugin-image`,
     {
@@ -55,12 +56,20 @@ module.exports = {
     },
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
-    // {
-    //   resolve: `gatsby-plugin-google-analytics`,
-    //   options: {
-    //     trackingId: `ADD YOUR TRACKING ID HERE`,
-    //   },
-    // },
+    {
+      resolve: "gatsby-plugin-robots-txt",
+      options: {
+        host: "https://steadily-worked.com",
+        sitemap: "https://steadily-worked.com/sitemap.xml",
+        policy: [{ userAgent: "*", allow: "/" }],
+      },
+    },
+    {
+      resolve: `gatsby-plugin-google-analytics`,
+      options: {
+        trackingId: `G-WDQ5WH8K1L`,
+      },
+    },
     {
       resolve: `gatsby-plugin-feed`,
       options: {
