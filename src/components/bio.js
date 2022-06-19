@@ -1,5 +1,7 @@
 import { graphql, useStaticQuery } from "gatsby"
 import { StaticImage } from "gatsby-plugin-image"
+import styled from "styled-components"
+
 /**
  * Bio component that queries for data
  * with Gatsby's useStaticQuery component
@@ -19,7 +21,9 @@ const Bio = () => {
             summary
           }
           social {
-            twitter
+            github
+            tistory
+            instagram
           }
         }
       }
@@ -47,13 +51,37 @@ const Bio = () => {
           Written by <strong>{author.name},</strong> {author?.summary || null}
           {` `}
           <br />
-          <a href={`https://github.com/steadily-worked`} target="_blank">
+          <Link
+            href={`https://github.com/${social?.github || ``}`}
+            target="_blank"
+            rel="noreferrer"
+          >
             GitHub
-          </a>
+          </Link>
+          {`  `}
+          <Link
+            href={`https://${social?.tistory || ``}.tistory.com`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Tistory
+          </Link>
+          {`  `}
+          <Link
+            href={`https://instagram.com/${social?.instagram || ``}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Instagram
+          </Link>
         </p>
       )}
     </div>
   )
 }
+
+const Link = styled.a`
+  text-decoration: none;
+`
 
 export default Bio

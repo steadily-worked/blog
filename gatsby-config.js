@@ -9,6 +9,8 @@ module.exports = {
     siteUrl: `https://steadily-worked.com`,
     social: {
       github: `steadily-worked`,
+      tistory: `steadily-worked`,
+      instagram: `nimgnaspark`,
     },
   },
   plugins: [
