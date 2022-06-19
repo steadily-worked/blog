@@ -18,10 +18,6 @@ const Seo = ({ description, lang, meta, title }) => {
           siteMetadata {
             title
             description
-            social {
-              github
-              tistory
-            }
           }
         }
       }
@@ -56,20 +52,8 @@ const Seo = ({ description, lang, meta, title }) => {
           content: `website`,
         },
         {
-          name: `twitter:card`,
-          content: `summary`,
-        },
-        {
-          name: `twitter:creator`,
-          content: site.siteMetadata?.social?.twitter || ``,
-        },
-        {
-          name: `twitter:title`,
-          content: title,
-        },
-        {
-          name: `twitter:description`,
-          content: metaDescription,
+          name: `viewport`,
+          content: "width=device-width, initial-scale=1.0",
         },
       ].concat(meta)}
     />
