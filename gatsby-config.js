@@ -1,4 +1,5 @@
 module.exports = {
+  pathPrefix: "steadily-worked.com",
   siteMetadata: {
     title: `steadily-worked.com`,
     author: {
@@ -14,6 +15,7 @@ module.exports = {
     },
   },
   plugins: [
+    `gatsby-plugin-typescript`,
     `gatsby-plugin-image`,
     {
       resolve: `gatsby-source-filesystem`,
