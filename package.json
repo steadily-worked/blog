@@ -1,9 +1,9 @@
 {
-  "name": "gatsby-starter-blog",
+  "name": "steadily-worked.com",
   "private": true,
-  "description": "A starter for a blog powered by Gatsby and Markdown",
-  "version": "0.1.0",
-  "author": "Kyle Mathews <mathews.kyle@gmail.com>",
+  "description": "blog by Sangmin Park",
+  "version": "1.0.0",
+  "author": "Sangmin Park <iamsangminpark@gmail.com>",
   "bugs": {
     "url": "https://github.com/gatsbyjs/gatsby/issues"
   },
@@ -25,6 +25,7 @@
     "gatsby-source-filesystem": "^4.16.0",
     "gatsby-transformer-remark": "^5.16.0",
     "gatsby-transformer-sharp": "^4.16.0",
+    "gh-pages": "^4.0.0",
     "prismjs": "^1.28.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
