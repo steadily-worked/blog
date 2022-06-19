@@ -23,7 +23,6 @@ const Bio = () => {
           social {
             github
             tistory
-            instagram
           }
         }
       }
@@ -32,7 +31,6 @@ const Bio = () => {
 
   // Set these values by editing "siteMetadata" in gatsby-config.js
   const author = data.site.siteMetadata?.author
-  const social = data.site.siteMetadata?.social
 
   return (
     <div className="bio">
@@ -48,39 +46,24 @@ const Bio = () => {
       />
       {author?.name && (
         <p>
-          Written by <strong>{author.name},</strong> {author?.summary || null}
+          Written by <strong>{author.name},</strong> <br />
+          {author?.summary || null} at{" "}
+          <StyledLink
+            href="https://freedsoft.oopy.io"
+            target="_blank"
+            rel="noreferrer"
+          >
+            FreeD Soft
+          </StyledLink>
           {` `}
           <br />
-          <Link
-            href={`https://github.com/${social?.github || ``}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            GitHub
-          </Link>
-          {`  `}
-          <Link
-            href={`https://${social?.tistory || ``}.tistory.com`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Tistory
-          </Link>
-          {`  `}
-          <Link
-            href={`https://instagram.com/${social?.instagram || ``}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Instagram
-          </Link>
         </p>
       )}
     </div>
   )
 }
 
-const Link = styled.a`
+const StyledLink = styled.a`
   text-decoration: none;
 `
 
