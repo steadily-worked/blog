@@ -39,7 +39,7 @@ import ImageWithCaption from "../components/image-with-caption"
 
 사내 모든 서비스는 `CloudFront`와 `S3`, `Lambda를` 중심으로 한 AWS의 기능들을 사용하고 있습니다. 따라서 Vercel보다는 Amplify를 선택함으로써 기존 AWS 인프라와의 일관성을 유지할 수 있으며, AWS 생태계에서 제공되는 다양한 기능과의 통합을 활용할 수 있다고 판단했습니다. 이는 관리 및 운영 프로세스를 단순화하고, 사내 다른 서비스들과 동시에 관리할 수 있기에, 일관된 품질을 제공할 수 있다는 점에서 장점을 갖고 있습니다.
 
-AWS Amplify는 Git Provider로 Azure DevOps를 지원하지 않기 때문에, AWS CodeCommit으로 push를 한 뒤에, 이 CodeCommit 내 레포지토리를 Amplify와 연결하여 특정 브랜치에 푸시되었을 때 Amplify로의 배포가 진행되도록 설정했습니다.
+Amplify는 Git Provider로 `Azure DevOps`를 지원하지 않기 때문에, `AWS CodeCommit`으로 push를 한 뒤에, 이 CodeCommit 내 레포지토리를 Amplify와 연결하여 특정 브랜치에 푸시되었을 때 Amplify로의 배포가 진행되도록 설정했습니다.
 
 <ImageWithCaption
   src="https://github.com/steadily-worked/nextra-blog/assets/61453718/7039d21c-b452-444a-a53b-ddc99b815bb6"
