@@ -1,9 +1,9 @@
 import styled from "@emotion/styled"
 import Link from "next/link"
 import React from "react"
-import Image, { ImageProps } from "next/image"
+import Image from "next/image"
 
-interface ImageWithCaptionProps extends ImageProps {
+type ImageWithCaptionProps = {
   title: string
   src: string
   alt: string
