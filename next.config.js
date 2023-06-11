@@ -9,4 +9,12 @@ const withNextra = require("nextra")({
 module.exports = withNextra({
   reactStrictMode: true,
   cleanDistDir: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "github.com",
+      },
+    ],
+  },
 })

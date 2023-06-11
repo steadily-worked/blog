@@ -1,33 +1,54 @@
+import styled from "@emotion/styled"
 import Link from "next/link"
 import React from "react"
+import Image, { ImageProps } from "next/image"
 
-type ImageWithCaptionProps = {
+interface ImageWithCaptionProps extends ImageProps {
   title: string
   src: string
   alt: string
   link?: string
+  width: number
+  height: number
 }
 
-const ImageWithCaption = ({ title, src, alt, link }: ImageWithCaptionProps) => {
+const ImageWithCaption = ({
+  title,
+  src,
+  alt,
+  link,
+  width,
+  height,
+}: ImageWithCaptionProps) => {
   if (title !== undefined) {
     return (
-      <Link href={link} style={{ textDecoration: "none" }} target="_blank">
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            cursor: "default",
-          }}
-        >
-          <img src={src} alt={alt} style={{ margin: "0" }} />
+      <StyledLink href={link} target="_blank">
+        <ImageWrapper>
+          <Image
+            src={src}
+            alt={alt}
+            style={{ margin: "0" }}
+            width={width}
+            height={height}
+          />
           <figcaption>{title}</figcaption>
-        </div>
-      </Link>
+        </ImageWrapper>
+      </StyledLink>
     )
   } else {
-    return <img src={src} alt={alt} />
+    return <Image src={src} alt={alt} />
   }
 }
+
+const StyledLink = styled(Link)`
+  text-decoration: none;
+`
+
+const ImageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: default;
+`
 
 export default ImageWithCaption
