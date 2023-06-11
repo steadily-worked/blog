@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "@emotion/styled": "^11.11.0",
     "next": "^13.4.3",
     "nextra": "^2.5.2",
     "nextra-theme-blog": "^2.5.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "styled-components": "^6.0.0-rc.3"
   },
   "scripts": {
     "dev": "next",
