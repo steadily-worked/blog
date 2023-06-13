@@ -22,8 +22,8 @@ import ImageWithCaption from "../components/image-with-caption"
 처음에 입사 후 투입된 프로젝트에서는 <Link href="https://github.com/serverless-nextjs/serverless-next.js" target="\_blank"> `serverless-next.js`</Link>를 사용하여 배포를 진행하고 있었습니다. 처음 투입되었을 당시에 이미 이를 사용하고 있었고, 그 당시에는 주어진 태스크를 처리하기에도 시간과 역량이 부족하여 이러한 기술적인 고민을 하지 못했습니다.
 시간이 지나고 `Next.js 13`이 등장한 뒤에, `Turbopack`(비록 현재 stable하지 않기 때문에 사용하고 있지 않지만)을 비롯한 다양한 개선점을 프로젝트에 적용하고 눈으로 확인하고자 Next의 버전을 13으로 올리고, 새로 서버를 파서 배포를 진행했더니 오류가 발생했습니다.
 
-오류의 원인은 Next.js가 13으로 버전업 되면서 서버리스 배포를 위한 설정이 내장되게 되었고, 이 과정에서 서버리스 배포를 위해 `next.config.js`에 추가해야 했던 `target` 옵션을 더이상 지원하게 않기 때문이었습니다.
-`serverless-nextjs`에서는 여전히 `target: serverless`를 필수로 요구합니다. 정확히는 이미 Next.js 13이 릴리즈 되기 한참 전부터 어떠한 작업도 레포지토리에 반영되지 않았습니다. 그러니 Next.js를 13으로 올린다면 더이상 `serverless-next.js`는 사용하지 못하게 되는 것이었습니다.
+오류의 원인은 Next.js가 13으로 버전업 되면서 서버리스 배포를 위한 설정이 내장되게 되었고, 이 과정에서 서버리스 배포를 위해 `next.config.js`에 추가해야 했던 `target` 옵션을 더이상 지원하지 않게 되었기 때문이었습니다.
+`serverless-nextjs`에서는 여전히 `target: serverless` 옵션을 필수로 요구합니다. 정확히는 이미 Next.js 13이 릴리즈 되기 한참 전부터 어떠한 작업도 레포지토리에 반영되지 않았습니다. 그러니 Next.js를 13으로 올린다면 더이상 `serverless-next.js`는 사용하지 못하게 되는 것이었습니다.
 
 <ImageWithCaption
   src="https://github.com/steadily-worked/nextra-blog/assets/61453718/646822e2-366a-45c6-8314-fea6dba7c49b"
