@@ -19,7 +19,6 @@ const themeConfig = {
   footer: (
     <small style={{ display: "block", marginTop: "8rem" }}>
       <time>{new Date().getFullYear()}</time> © Sangmin Park .
-      <a href="/feed.xml">RSS</a>
       <style jsx>{`
         a {
           float: right;
