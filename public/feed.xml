@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title><![CDATA[Sangmin Park]]></title>
+        <description><![CDATA[Sangmin Park]]></description>
+        <link>https://sangmin.dev</link>
+        <generator>RSS for Node</generator>
+        <lastBuildDate>Thu, 15 Jun 2023 10:42:12 GMT</lastBuildDate>
+        <atom:link href="https://sangmin.dev/feed.xml" rel="self" type="application/rss+xml"/>
+        <item>
+            <title><![CDATA[배포 자동화 프로세스 전환기]]></title>
+            <description><![CDATA[Serverless framework에서 AWS Amplify로 전환하게 된 계기와 과정에 대해 알아봅니다.]]></description>
+            <link>/posts/migration-of-automated-deployment-process-with-serverless-framework-to-aws-amplify</link>
+            <guid isPermaLink="true">/posts/migration-of-automated-deployment-process-with-serverless-framework-to-aws-amplify</guid>
+            <category><![CDATA[Amplify]]></category>
+            <category><![CDATA[Serverless]]></category>
+            <dc:creator><![CDATA[Sangmin Park]]></dc:creator>
+            <pubDate>Sat, 10 Jun 2023 15:00:00 GMT</pubDate>
+        </item>
+    </channel>
+</rss>
