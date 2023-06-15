@@ -19,6 +19,7 @@ export default {
   footer: (
     <small style={{ display: "block", marginTop: "8rem" }}>
       {new Date().getFullYear()} @ Sangmin Park.
+      <a href="/feed.xml">RSS</a>
       <style jsx>{`
         a {
           float: right;
