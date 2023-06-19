@@ -22,7 +22,7 @@ const ImageWithCaption = ({
 }: ImageWithCaptionProps) => {
   if (title !== undefined) {
     return (
-      <StyledLink href={link} target="_blank">
+      <StyledLink href={link ?? '#'} target="_blank">
         <ImageWrapper>
           <Image
             src={src}
