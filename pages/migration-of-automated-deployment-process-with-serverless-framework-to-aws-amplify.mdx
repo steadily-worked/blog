@@ -25,17 +25,25 @@ import ImageWithCaption from "components/image-with-caption"
 오류의 원인은 Next.js가 13으로 버전업 되면서 서버리스 배포를 위한 설정이 내장되게 되었고, 이 과정에서 서버리스 배포를 위해 `next.config.js`에 추가해야 했던 `target` 옵션을 더이상 지원하지 않게 되었기 때문이었습니다.
 `serverless-nextjs`에서는 여전히 `target: serverless` 옵션을 필수로 요구합니다. 정확히는 이미 Next.js 13이 릴리즈 되기 한참 전부터 어떠한 작업도 레포지토리에 반영되지 않았습니다. 그러니 Next.js를 13으로 올린다면 더이상 `serverless-next.js`는 사용하지 못하게 되는 것이었습니다.
 
-<ImageWithCaption
-  src="https://github.com/steadily-worked/nextra-blog/assets/61453718/646822e2-366a-45c6-8314-fea6dba7c49b"
-  alt="asd"
-  link="https://github.com/serverless-nextjs/serverless-next.js/issues/2497"
-  title="Next.js 13과의 호환성에 대한 Issue. 클릭 시 해당 Issue로 이동합니다."
-  width={931}
-  height={700}
-/>
+<Link
+  href="https://github.com/serverless-nextjs/serverless-next.js/issues/2497"
+  target="_blank"
+  style={{ textDecoration: "none" }}
+>
+  <ImageWithCaption
+    src="https://github.com/steadily-worked/nextra-blog/assets/61453718/646822e2-366a-45c6-8314-fea6dba7c49b"
+    alt="asd"
+    link="https://github.com/serverless-nextjs/serverless-next.js/issues/2497"
+    title="Next.js 13과의 호환성에 대한 Issue. 클릭 시 해당 Issue로 이동합니다."
+    width={931}
+    height={700}
+  />
+</Link>
 
-이미 코어 개발자들의 손에서 떠난 프로젝트이기에, 더이상의 업데이트는 기대할 수 없었습니다. 이러한 이유로, 새로운 배포 자동화 프로세스를 찾기 시작했습니다.
-후보군은 `Vercel`과 `AWS Amplify`가 있었습니다. 여기서 Amplify를 선택한 이유는, 기존 서비스와의 통합된 관리의 용이성 때문이었습니다.
+이미 코어 개발자들의 손에서 떠난 프로젝트이기에, 더이상의 업데이트는 기대할 수 없었습니다.
+이러한 이유로, 새로운 배포 자동화 프로세스를 찾기 시작했습니다. 후보군은 `Vercel`과
+`AWS Amplify`가 있었습니다. 여기서 Amplify를 선택한 이유는, 기존 서비스와의 통합된
+관리의 용이성 때문이었습니다.
 
 사내 모든 서비스는 `CloudFront`와 `S3`, `Lambda를` 중심으로 한 AWS의 기능들을 사용하고 있습니다. 따라서 Vercel보다는 Amplify를 선택함으로써 기존 AWS 인프라와의 일관성을 유지할 수 있으며, AWS 생태계에서 제공되는 다양한 기능과의 통합을 활용할 수 있다고 판단했습니다. 이는 관리 및 운영 프로세스를 단순화하고, 사내 다른 서비스들과 동시에 관리할 수 있기에, 일관된 품질을 제공할 수 있다는 점에서 장점을 갖고 있습니다.
 
