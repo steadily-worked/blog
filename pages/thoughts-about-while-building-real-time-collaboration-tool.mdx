@@ -1,0 +1,313 @@
+---
+title: 동시성 협업 툴을 만들면서 고려했던 점들
+date: 2024/11/24
+description: WebSocket을 사용한 동시성 협업 툴을 만들면서 고려했던 점들에 대해 알아봅니다.
+tag: WebSocket, Windowing
+author: Sangmin Park
+---
+
+import Link from "next/link";
+import Image from "next/image";
+import ImageWithCaption from "components/image-with-caption";
+
+#### WebSocket을 사용한 동시성 협업 툴(CAT Tool)을 만들면서 고려했던 점들에 대해 알아봅니다.
+
+<hr />
+
+### 개요
+
+개인적으로 저는 프론트엔드 파트의 꽃은 동시성에 있다고 생각해왔습니다. 유튜브 라이브나
+[숲(SOOP)](https://www.sooplive.co.kr/), [치지직](https://chzzk.naver.com/) 등의
+라이브 스트리밍이나 [Figma](https://figma.com/), [Google Docs](https://docs.google.com/) 등의 협업 툴이 대표적인 예시입니다.
+서버와 실시간으로 데이터를 주고 받고, 그 과정에서 유저가 느끼기에 어떠한 버벅임도
+없게 하는 것이 좋은 사용자 경험을 제공하는 것에 있어 가장 중요하다고 생각했습니다.
+
+이러한 생각을 가지면서 동시에, HTTP Request를 사용한 Stateless한 개발만 해왔던 저는
+Stateful한 WebSocket 프로토콜에 대한 관심을 갖게 되었습니다.
+그렇지만 실무에서 사용할 기회가 없어 관심에만 그쳤던 중 회사에서 동시성 협업 툴을 만들고자 하는 니즈가 생겨
+서버 개발자분들과 협업하며 개발을 진행했습니다. 이 과정에서 제가, 그리고 저희 팀이 고려했던 점들을 정리해보고자 합니다.
+
+저희가 만들고자 했던 프로덕트는, 특정 문서를 번역할 때 한 방(Workspace)에서 번역가와 감수자가 동시에 작업할 수 있도록 함으로써
+번역이 완료된 후 감수하여 납품하는 현재의 형태에서 감수자가 번역가가 번역을 완료할 때까지 기다려야 하는 병목현상을
+해결하는 것을 주된 목표로 삼고 출발했습니다.
+
+<Image
+  src="https://github.com/user-attachments/assets/043a0f1f-72c2-4b6d-89a6-ddf189cd187a"
+  alt="CAT Tools"
+  width={1512}
+  height={852}
+/>
+
+각 번호는 세그먼트(Segment)로 구분되며, 좌측이 원본 텍스트이고 우측이 번역이 필요한 텍스트입니다.
+
+### 기술 선택
+
+우선 저희는 `Socket.io`나 `Stomp`와 같은 프로토콜을 사용하지 않았습니다. WebSocket 그대로를 사용하는 게 가장 가볍고 빨랐기 때문입니다.
+물론 WebSocket 프로토콜 자체는 `Socket.io`와 같은 프로토콜이 제공하는 자동 재연결 등의 기능이 없기에 직접 구현해야했지만,
+그 부분은 고려 대상이 아니었습니다. 저희는 특정 프로토콜에 의존하지 않는 WebSocket 프로토콜 그 자체일 때 확장성이 제일 높다고 판단하였습니다.
+뿐만 아니라, 각 프로토콜에서 강제되는 데이터 형식 또한 걸림돌 중 하나였습니다.
+이러한 이유로 퓨어한 WebSocket 프로토콜 환경에서 해야 할 작업을 하나씩 하기 시작했습니다.
+
+### 유저 액션(User Action) 정의
+
+각 번역 건마다 워크스페이스가 생성되고 그 워크스페이스 내에서 번역가와 감수자의 동시 작업이 이뤄지기 때문에,
+모든 User Action이 유기적으로 발생하고 또 다른 유저에게 영향을 줄 수 있었습니다. 그렇기에 개발을 시작하기에 앞서
+각 Use Case를 파악하고 그에 따른 User Action을 상정하는 것이 중요했습니다. 저희가 생각했던 User Action은 다음과 같습니다:
+
+- 각 유저의 진입 및 이탈
+- 각 유저의 세그먼트(Segment) 점유 및 점유 해제
+- 각 유저의 세그먼트(Segment) 수정
+- 각 유저의 세그먼트(Segment) 확정 (세그먼트의 레벨 설정)
+
+서버에서 모든 이벤트는
+
+```json
+{
+  "JoinWorkSpace": {
+    // 해당 event에 필요한 정보
+  },
+  "account_id": "해당 action을 발생시킨 유저의 id",
+  "timestamp": "해당 action이 발생한 시각"
+}
+```
+
+의 형태로 각 Action 객체와 그 Action과 관련된 유저의 정보의 형태로 서버로부터 전달됩니다.
+
+#### 각 유저의 진입 및 이탈
+
+각 유저가 해당 워크스페이스에 진입하자마자 WebSocket 연결을 시작합니다. WebSocket 프로토콜이 따로 Authorization Header
+옵션을 제공하지 않아서, 진입 즉시
+
+- Access Token을 넣어 Authorization 헤더를 담는 Action
+- `JoinWorkSpace`라는 객체로 감싸 어떤 워크스페이스에 진입했는지에 대한 Action
+
+각각을 동기적으로 서버에 보냅니다.
+
+서버에서 Relay를 지원하도록 구축했기 때문에 서버로부터 오는 `JoinWorkSpace` 이벤트는 해당 워크스페이스에 진입해 있는
+모든 유저들에게 보내집니다. 클라이언트에서는 이러한 정보를 바탕으로 해당 워크스페이스에서 각 유저의 실시간 접속 여부를
+표시했습니다.
+
+또한 기본적으로 모든 Action에는 현재 접속해있는 유저 상태의 업데이트 이벤트가 포함되어 있습니다. 네트워크 이슈 등으로 인해
+특정 유저의 `JoinWorkSpace` 이벤트가 Relay되지 못했을 경우 발생할 수 있는 충돌 문제를 해결하기 위함이었습니다.
+
+#### 각 유저의 세그먼트(Segment) 점유 및 점유 해제
+
+각 세그먼트는 한 명의 유저만 점유할 수 있고, 점유 시 다른 유저들에게는 Lock된 상태로 수정 불가능한 형태로 보여져야 했습니다.
+이를 위해 `LockedSegments` 라는 상태로 관리했습니다(각 유저가 각 세그먼트를 점유할 수 있기 때문에 Array 형태로 관리해야 했습니다).
+모든 액션을 `data`라는 객체로 받기 때문에 `data` 객체 내부에 Action 이름이 있는지 여부로 판단하여 분기처리를 진행했습니다.
+
+```json
+{
+  "UpdateSegment": {
+    "content": "본 이용약관은 귀하의 당d사의 서비스 이용을 규율합니다.",
+    "segment_id": 2,
+    "workspace_id": "7241766028122918914"
+  },
+  "account_id": "7160630100776590675"
+}
+```
+
+위와 같은 형태로 전달되는 JSON 객체를 받아 그에 맞게 아래와 같이 잠겨있는 세그먼트를 업데이트했습니다.
+
+```tsx
+setAccountIds((prev) => [...prev, data.account_id]);
+const accountId = data.account_id;
+const { segment_id, content } = data.UpdateSegment;
+setLockedSegments((prevLockedSegments) => ({
+  ...prevLockedSegments,
+  [accountId]: segment_id,
+}));
+```
+
+이렇게 될 경우 `LockedSegments` 배열에 포함된 `segment_id`에 대해서는 아래와 같은 작업을 할 수 있게 됩니다.
+
+- 어떤 유저가 어떤 세그먼트를 점유하고 있는지 표시
+- 해당 세그먼트에 대한 잠금 처리
+
+#### 각 유저의 세그먼트(Segment) 수정
+
+여러 인원이 동시에 작업하는 환경에서 중요한 점은 모든 유저에게 실시간으로 각 유저의 수정사항이 반영되어야 한다는 것이었습니다.
+이를 위해서 `UpdateSegment` 이벤트를 받을 때마다 업데이트된 세그먼트들로 `segments` 상태를 업데이트했습니다.
+당연히 매번 변경 시마다 `setState`로 상태를 업데이트하는 것은 성능상으로 무리가 있을 수 있었고, 그러한 이유로
+batching 등 다양한 방법을 고려했지만 최적화와 실시간 업데이트를 동시에 가져갈 수는 없겠다는 이유로 결국
+세그먼트를 업데이트하는 이벤트에 대해 디바운싱을 걸어 한 번에 업데이트하는 방법으로 부분적인 최적화를 진행했습니다.
+이게 용인될 수 있었던 또 다른 한 가지 이유는, 한 워크스페이스에 최대로 존재할 수 있는 인원 자체가 기획 상으로
+많지 않았고, 매우 많은 인원이 들어와서 한꺼번에 수정할 Use Case가 거의 없었기 때문입니다. 그에 따라 `UpdateSegment` 이벤트를 서버로부터 수신했을 때, 수정된 id에 맞는 값을 변경시켜주는 작업을 진행했습니다.
+
+### 트러블슈팅 및 최적화
+
+<hr />
+
+#### 무한 펜딩
+
+처음 유저가 `JoinWorkSpace` 이벤트를 통해 워크스페이스에 진입하고, 새로고침을 여러 번 시도하여 여러 번 재연결
+했을 때 문제가 없는지 확인하고 있었습니다. 이 때, 특정 횟수 이상 재연결을 진행하면 WebSocket 통신이 계속 pending
+을 리턴하는 문제가 발생했습니다.
+
+<Image
+  src="https://github.com/user-attachments/assets/112991f8-d68c-4ebd-a74d-7a2524f714f9"
+  alt="CAT Tools"
+  width={1512}
+  height={852}
+/>
+
+위 사진은 클라이언트 단의 문제인지 파악하기 위해 Create React App으로 새로운 앱을 만들고 웹소켓 연동을
+진행했던 화면입니다. 몇시간의 디버깅 결과 문제는 <b>새로고침을 할 때 유저의 이탈 이벤트가 서버에 미도달</b>
+했기 때문이었습니다.
+
+새로고침은 WebSocket 연결을 끊는 것처럼 보이지만, 저희는 유저의 이탈을 감지하기 위해
+`Left`라는 User Action을 따로 정의했고 그렇기 때문에 그 값을 서버에서 받았을 때에서야
+비로소 클라이언트와의 연결이 끊어지는 방식이었습니다. 결국 `Left` 이벤트가 서버에 도달하지 못했기 때문에 서버는 WebSocket 연결을 끊지 않았고
+그에 따라 새로고침의 횟수만큼 클라이언트와 서버 간의 WebSocket 연결이 생성되고 유지되다가 이를 버티지 못해
+pending 상태가 되는 것이었습니다.
+
+이러한 문제는 새로고침 이벤트를 감지하고 `Left` 객체를 서버에 전송하는 아래와 같은 형태로 해결했습니다.
+
+```tsx
+const sendLeft = useCallback(() => {
+  const data = JSON.stringify({
+    Left: {},
+  });
+  if (ws.current.readyState === WebSocket.OPEN) {
+    ws.current.send(data);
+  }
+}, []);
+
+useEffect(() => {
+  const handleBeforeUnload = () => {
+    sendLeft();
+  };
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  return () => {
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+  };
+}, [sendLeft]);
+```
+
+이 `sendLeft` 함수는, 새로고침 뿐만 아니라 페이지를 종료했을 때에도 호출되어 유저의 이탈 이벤트를 서버에 전달합니다.
+
+#### 버벅임
+
+어찌저찌 개발을 마무리하고 개발 서버에 배포해보니, 스크롤을 할 때 버벅이는 문제가 발생했습니다.
+문제 상황은 다음과 같았습니다:
+
+1. 모든 유저가 실시간으로 같은 세그먼트들을 공유해야하기에 유저는 진입 즉시 모든 세그먼트를 상태값으로 갖고 있어야 함
+2. 그렇기에 대용량의 데이터가 화면에 렌더링된 상황
+
+꼭 1번과 같은 방식을 채택할 필요는 없었습니다. 무한 스크롤을 이용하면 최신의 데이터를 보장할 수 있기 때문입니다.
+하지만 무한 스크롤을 이용했을 경우 스크롤마다 다음 페이지를 불러올 때 발생하는 스피너가 안좋은 유저 경험을 제공한다고 판단했습니다.
+이러한 이유로 진입 즉시 대용량의 데이터를 모두 불러오는 방식을 채택했고, 그에 따라 모든 데이터들이 렌더링되었기 때문에 스크롤했을 때
+문제가 발생한 것이었습니다.
+
+유저 경험만 아니라면 사실 모든 데이터를 진입 시점에 받아오는 건 이상적인 해결방법으로 보이진 않습니다.
+
+문제를 맞닥뜨렸을 때 처음 들었던 생각은, <b>유저가 보고 있는 데이터만 렌더링</b>한다면 어떨까라는 것이었습니다. 그리고 구글링을 한 결과
+이미(당연히도) `Windowing`이라는 방법으로 불리며 사용되고 있었습니다. `Windowing` 이란, 전체 목록의 일부만 렌더링하는 기법입니다.
+레거시 문서긴 하지만 [React 공식 문서](https://ko.legacy.reactjs.org/docs/optimizing-performance.html#virtualize-long-lists)에서도
+최적화 방법으로 Windowing 기법을 추천하고 있습니다.
+
+이미 `Windowing`을 편하게 구현할 수 있는 라이브러리들이 존재했기에 저는 이들을 비교했습니다.
+
+<Image
+  src="https://github.com/user-attachments/assets/759f66b7-b3e5-4168-9dfa-f30acc95733a"
+  alt="Windowing"
+  width={1071}
+  height={566}
+/>
+
+대표적으로 위 3개의 라이브러리가 있었는데, 저는 그중에서도 가장 활발하게 업데이트되고 있으며 번들 사이즈가
+가장 작은 `@tanstack/react-virtual`을 선택했습니다. 저는 API 호출로 받은 데이터를 `segments` 상태값으로 저장한
+다음, 다음과 같이 `useVirtualizer` 훅을 사용하여 렌더링 되는 데이터의 양을 조절하고, 해당 데이터를 mapping하여
+보여주는 형태로 최적화를 진행했습니다.
+
+```tsx
+const parentElement = useRef(null);
+
+const virtualizer = useVirtualizer({
+  count: segments ? segments.sort((a, b) => a.id - b.id).length : 0,
+  getScrollElement: () => parentElement.current,
+  estimateSize: () => 30,
+  overscan: 3,
+});
+
+const items = virtualizer.getVirtualItems();
+
+return (
+  <div className="w-full overflow-y-auto lg:w-[85%]" ref={parentElement}>
+    <table
+      className="w-full"
+      style={{
+        position: "relative",
+        height: virtualizer.getTotalSize(),
+      }}
+    >
+      <tbody
+        className="w-full"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          transform: `translateY(${items[0]?.start}px)`,
+        }}
+      >
+        {items.map((virtualRow) => {
+          return (
+            <tr
+              ref={virtualizer.measureElement}
+              key={virtualRow.index}
+              data-index={virtualRow.index}
+            >
+              {/* ... */}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+);
+```
+
+그 결과, 화면에 렌더링되는 데이터의 양이 뷰포트의 크기에 맞춰 조절되어
+버벅임 문제를 해결할 수 있었습니다.
+
+<Image
+  src="https://github.com/user-attachments/assets/2f8c7073-b908-417f-8591-de375b689a96"
+  alt="Windowing"
+  width={1512}
+  height={852}
+/>
+
+#### 자동 재연결
+
+`Socket.io`와 같은 프로토콜에서는 자동 재연결을 지원합니다. Chrome 브라우저를 기준으로, WebSocket 연결을
+시작한 후 1분 이상 비활동 상태가 유지된다면 자동으로 연결을 끊어버립니다. 이를 WebSocket 프로토콜 자체에서 구현하기 위해
+[event.wasClean](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/wasClean) 메소드를 사용했습니다. `event.wasClean` 메소드를 통해 웹소켓 연결이
+정상적으로 끊어졌는지(즉 강제 종료, 네트워크 에러, 타임아웃 등의 이슈로 끊어지지 않았는지)를 파악할 수 있었기 때문에, `event.wasClean`이 false인 경우 재연결을 시도했습니다.
+
+```tsx
+const startWebSocket = () => {
+  ws.current = new WebSocket(webSocketUrl);
+
+  /* ... */
+  ws.current.onclose = handleWebSocketClose;
+};
+
+const handleWebSocketClose = (e: CloseEvent) => {
+  if (e.wasClean) {
+    console.log("WebSocket Closed");
+  } else {
+    console.log("WebSocket Reconnecting...");
+    setTimeout(startWebSocket, Math.random() * 1000);
+  }
+  ws.current = null;
+};
+```
+
+이런 방식을 통해, 브라우저에서 자동으로 WebSocket 연결을 끊었을 때 다시 연결을 시도하여 예기치 않은 문제를 방지할 수 있었습니다.
+추가로, 재연결에 `setTimeout`을 사용하는 이유는 각 클라이언트에서 WebSocket 연결이 종료되자마자 한꺼번에 재시도를 하는 케이스가 발생할 때 서버에 과부하가 걸리는 것을 방지하기 위함입니다.
+클라이언트마다 임의의 시간차를 두고 연결을 시도하는 경우 이러한 부분을 방지할 수 있습니다.
+
+### 마치며
+
+MVP의 목표는 번역가와 감수자를 포함한 다양한 유저가 충돌 없이 동시에 작업할 수 있는 환경을 만드는 것이었습니다. 비록 한 유저가 세그먼트를 점유했을 때 다른 유저들에게 Lock된 상태로 보이는,
+충돌 방지 알고리즘이 적용되지 않은 반쪽짜리 동시성 도구라고 생각하지만 얼핏 보면 단순해 보이는 동시성 협업 툴을 만드는 것에 있어서도 상당한 기술적 고민이 필요하다는 것을 체감했습니다.
