@@ -32,6 +32,6 @@ const themeConfig = {
       `}</style>
     </small>
   ),
-}
+};
 
-export default themeConfig
+export default themeConfig;

@@ -99,10 +99,14 @@ Stateful한 WebSocket 프로토콜에 대한 관심을 갖게 되었습니다.
 const [activeUsers, setActiveUsers] = useState<Set<string>>(new Set());
 
 // 유저별 점유 세그먼트 매핑 (accountId -> segmentId)
-const [lockedSegments, setLockedSegments] = useState<Map<string, string>>(new Map());
+const [lockedSegments, setLockedSegments] = useState<Map<string, string>>(
+  new Map(),
+);
 
 // 세그먼트별 점유자 매핑 (segmentId -> accountId) - 빠른 조회용
-const [segmentOwners, setSegmentOwners] = useState<Map<string, string>>(new Map());
+const [segmentOwners, setSegmentOwners] = useState<Map<string, string>>(
+  new Map(),
+);
 ```
 
 모든 액션을 `data`라는 객체로 받기 때문에 `data` 객체 내부에 Action 이름이 있는지 여부로 판단하여 분기처리를 진행했습니다.
@@ -125,9 +129,9 @@ const handleSegmentLock = (data: WebSocketData) => {
   if (data.UpdateSegment) {
     const { account_id } = data;
     const { segment_id } = data.UpdateSegment;
-    
+
     // 이전에 해당 유저가 점유했던 세그먼트가 있다면 해제
-    setSegmentOwners(prev => {
+    setSegmentOwners((prev) => {
       const newOwners = new Map(prev);
       const prevSegmentId = lockedSegments.get(account_id);
       if (prevSegmentId) {
@@ -136,10 +140,12 @@ const handleSegmentLock = (data: WebSocketData) => {
       newOwners.set(segment_id.toString(), account_id);
       return newOwners;
     });
-    
+
     // 유저의 새로운 세그먼트 점유 설정
-    setLockedSegments(prev => new Map(prev).set(account_id, segment_id.toString()));
-    setActiveUsers(prev => new Set(prev).add(account_id));
+    setLockedSegments((prev) =>
+      new Map(prev).set(account_id, segment_id.toString()),
+    );
+    setActiveUsers((prev) => new Set(prev).add(account_id));
   }
 };
 ```
@@ -172,18 +178,18 @@ const getUserLockedSegment = (accountId: string): string | undefined => {
 const handleSegmentUnlock = (accountId: string) => {
   const segmentId = lockedSegments.get(accountId);
   if (segmentId) {
-    setLockedSegments(prev => {
+    setLockedSegments((prev) => {
       const newMap = new Map(prev);
       newMap.delete(accountId);
       return newMap;
     });
-    setSegmentOwners(prev => {
+    setSegmentOwners((prev) => {
       const newMap = new Map(prev);
       newMap.delete(segmentId);
       return newMap;
     });
   }
-  setActiveUsers(prev => {
+  setActiveUsers((prev) => {
     const newSet = new Set(prev);
     newSet.delete(accountId);
     return newSet;
@@ -204,13 +210,11 @@ const handleSegmentUnlock = (accountId: string) => {
 ```tsx
 const handleSegmentUpdate = (data: UpdateSegmentData) => {
   const { segment_id, content } = data.UpdateSegment;
-  
-  setSegments(prevSegments => 
-    prevSegments.map(segment => 
-      segment.id === segment_id 
-        ? { ...segment, content }
-        : segment
-    )
+
+  setSegments((prevSegments) =>
+    prevSegments.map((segment) =>
+      segment.id === segment_id ? { ...segment, content } : segment,
+    ),
   );
 };
 ```
@@ -227,7 +231,7 @@ const handleSegmentUpdate = (data: UpdateSegmentData) => {
 const [segmentsMap, setSegmentsMap] = useState<Map<string, Segment>>(new Map());
 
 const updateSegment = (segmentId: string, content: string) => {
-  setSegmentsMap(prev => {
+  setSegmentsMap((prev) => {
     const newMap = new Map(prev);
     const existingSegment = newMap.get(segmentId);
     if (existingSegment) {

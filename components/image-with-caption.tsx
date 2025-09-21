@@ -1,14 +1,14 @@
-import styled from "styled-components"
-import React from "react"
-import Image from "next/image"
+import styled from "styled-components";
+import React from "react";
+import Image from "next/image";
 
 type ImageWithCaptionProps = {
-  title: string
-  src: string
-  alt: string
-  width: number
-  height: number
-}
+  title: string;
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+};
 
 const ImageWithCaption = ({
   title,
@@ -29,17 +29,17 @@ const ImageWithCaption = ({
         />
         <figcaption>{title}</figcaption>
       </ImageWrapper>
-    )
+    );
   } else {
-    return <Image src={src} alt={alt} />
+    return <Image src={src} alt={alt} />;
   }
-}
+};
 
 const ImageWrapper = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
   cursor: default;
-`
+`;
 
-export default ImageWithCaption
+export default ImageWithCaption;
